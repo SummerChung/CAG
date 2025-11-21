@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>合約自動化生成系統</title>
     
-    <!-- 引入必要的函式庫 (已移除不穩定的 PizZipUtils) -->
+    <!-- 改用更穩定的 CDN 來源 -->
+    <script src="https://unpkg.com/pizzip@3.1.4/dist/pizzip.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/docxtemplater/3.37.11/docxtemplater.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pizzip/3.1.4/pizzip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.8/FileSaver.min.js"></script>
 
     <style>
@@ -45,7 +45,7 @@
 <div class="container">
     <h1>合約自動化生成程式</h1>
     
-    <!-- 第一頁：合約類型 -->
+    <!-- 第一頁 -->
     <div id="page1" class="page active">
         <h2>步驟 1/3：合約類型選擇</h2>
         <div class="form-group">
@@ -60,7 +60,7 @@
         </div>
     </div>
 
-    <!-- 第二頁：基本資料與費用 -->
+    <!-- 第二頁 -->
     <div id="page2" class="page">
         <h2>步驟 2/3：基本資料與費用</h2>
         
@@ -186,7 +186,7 @@
         </div>
     </div>
 
-    <!-- 第三頁：條款與生成 -->
+    <!-- 第三頁 -->
     <div id="page3" class="page">
         <h2>步驟 3/3：條款勾選與生成</h2>
 
@@ -255,7 +255,7 @@
 <script>
     /* --- 核心功能函式 --- */
 
-    // 1. 檔案讀取 (取代 PizZipUtils)
+    // 1. 檔案讀取 (不依賴外部不穩定的 Utils)
     function loadFile(url, callback) {
         var xhr = new XMLHttpRequest();
         xhr.open('GET', url, true);
@@ -276,7 +276,6 @@
     // 2. 頁面切換
     function nextPage(page) {
         if(page === 3) {
-            // 驗證必填欄位
             const reqFields = [
                 'commName', 'commAddr', 'partyB', 'repName', 'phone',
                 'bankName', 'bankBranch', 'acctName', 'acctNum'
@@ -423,11 +422,16 @@
         document.getElementById('total_monthly').value = "$" + total;
     }
 
-    // 7. 生成合約 (核心邏輯，改用 loadFile)
+    // 7. 生成合約 (核心邏輯)
     function generateContract() {
+        // 檢查 PizZip 是否載入成功
+        if (typeof PizZip === 'undefined') {
+            alert("❌ 系統錯誤：PizZip 函式庫未能成功載入。\n請檢查您的網路連線，或稍後再試。");
+            return;
+        }
+
         const templateURL = "./template.docx";
         
-        // 改用自定義 loadFile 避免 PizZipUtils 錯誤
         loadFile(templateURL, function(error, content) {
             if (error) {
                 alert("❌ 錯誤：無法讀取合約範本 (template.docx)。\n請確認檔案已上傳至 GitHub 且檔名大小寫完全一致。");
